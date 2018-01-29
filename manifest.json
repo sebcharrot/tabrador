@@ -31,6 +31,10 @@
     "gecko": {
       "id": "tabrador@sebcharrot.com"
     }
-  }
+  },
+  
+  "web_accessible_resources": [
+    "icons/icon-48.png"
+  ]
 
 }

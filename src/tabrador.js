@@ -4,6 +4,9 @@
 console.debug("Tabrador Loaded. Woof.");
 
 var _box;
+var _icon;
+var _iconId = "tabrador-icon";
+var _iconSize = 40;
 var _boxId = "tabrador-selection-box";
 var _selectedLinkClass = "tabrador-selected";
 var _count_label;
@@ -61,14 +64,26 @@ function onRightMouseDown(event) {
         _box = document.createElement("span");
         _box.setAttribute("id", _boxId);
         _box.style.margin = "0px auto";
-        _box.style.border = "2px dotted red";
+        _box.style.border = "2px dotted #b19267";
+        _box.style.background = "rgba(239, 197, 137, 0.2)";
         _box.style.position = "absolute";
         _box.style.zIndex = 2147483647;
         _box.style.visibility = "hidden";
 
+        _icon = document.createElement("img");
+        _icon.setAttribute("id", _iconId);
+        var iconUrl = browser.extension.getURL("icons/icon-48.png");
+        _icon.setAttribute("src", iconUrl);
+        _icon.style.height = _iconSize + "px";
+        _icon.style.width = _iconSize + "px";
+        _icon.style.position = "absolute";
+        _icon.style.zIndex = 2147483647;
+        _icon.style.visibility = "hidden";
+
         // TODO - Add tabrador head & link count
 
         document.body.appendChild(_box);
+        document.body.appendChild(_icon);
     }
 
     // Update position
@@ -93,6 +108,7 @@ function onMouseMove(event) {
     updateBox(event);    
     collectSelectedLinks();        
     _box.style.visibility = "visible";
+    _icon.style.visibility = "visible";
 }
 
 /**
@@ -137,12 +153,16 @@ function cleanUp() {
     console.debug("cleanUp");
     
     $("#" + _boxId).remove();
+    $("#" + _iconId).remove();
+
     _box = undefined;
+    _icon = undefined;
+    
     _dragHappened = false;
     _selectedLinks = [];
 
     // Remove all annotations
-    $(_selectedLinkClass).removeClass(_selectedLinkClass);
+    undecorateLinkElements();
 
     // Remove mousemove listener
     $('body').off('mousemove');
@@ -196,6 +216,9 @@ function collectSelectedLinks() {
         
             decorateLinkElement(linkElement);
             _selectedLinks.push(linkElement);
+        } else {
+            // Undecorate in case it was previously decorated
+            undecorateLinkElement(linkElement);            
         }
     }
 }
@@ -259,6 +282,23 @@ function decorateLinkElement(linkElement) {
 }
 
 /**
+ * Un-decorate all decorated elements
+ */
+function undecorateLinkElements(linkElement) {
+    console.debug("undecorateLinkElements");
+    $("." + _selectedLinkClass).removeClass(_selectedLinkClass);
+}
+
+/**
+ * Un-decorate a given element to remove the special "selected" class
+ * @param {*} linkElement 
+ */
+function undecorateLinkElement(linkElement) {
+    console.debug("undecorateLinkElement");
+    $(linkElement).removeClass(_selectedLinkClass);
+}
+
+/**
  * Identify all <a> elements on the page
  */
 function collectAllLinks() {
@@ -291,7 +331,10 @@ function updateBox(event) {
 	_box.style.top = _box.y + "px";
 
     _box.style.width = width + "px";
-	_box.style.height = height + "px";
+    _box.style.height = height + "px";
+    
+    _icon.style.left = _box.x - (_iconSize/2) + "px";
+	_icon.style.top = _box.y - (_iconSize/2) + "px";
 }
 
 /**
