@@ -1,0 +1,36 @@
+{
+
+  "manifest_version": 2,
+  "name": "Tabrador",
+  "version": "1.0",
+
+  "description": "Open multiple links at once into background tabs. Woof.",
+
+  "icons": {
+    "48": "icons/icon-48.png"
+  },
+
+  "background": {
+    "scripts": ["src/background.js"]
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["libs/jquery-3.3.1.slim.min.js", "src/tabrador.js"],
+      "css": ["src/tabrador.css"],
+      "run_at": "document_end"
+    }
+  ],
+
+  "permissions": [
+     "tabs"
+  ],
+
+  "applications": {
+    "gecko": {
+      "id": "tabrador@sebcharrot.com"
+    }
+  }
+
+}
