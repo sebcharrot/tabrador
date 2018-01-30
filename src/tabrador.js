@@ -49,6 +49,8 @@ $("body").contextmenu(function(event) {
     }
 });
 
+// TODO: Also close on keypress/escape
+
 /**
  * Handle right-click of the mouse. Create the box and hook up mousemove.
  * @param {*} event 
@@ -80,7 +82,7 @@ function onRightMouseDown(event) {
         _icon.style.zIndex = 2147483647;
         _icon.style.visibility = "hidden";
 
-        // TODO - Add tabrador head & link count
+        // TODO - Add link count
 
         document.body.appendChild(_box);
         document.body.appendChild(_icon);
@@ -93,6 +95,7 @@ function onRightMouseDown(event) {
     updateBox(event);
 
     // Now listen for mousemove
+    // var debouncedOnMouseMove = debounce(onMouseMove, 50, true);
     $("body").mousemove(onMouseMove);
 }
 
@@ -106,7 +109,9 @@ function onMouseMove(event) {
 
     // TODO: Debounce this work so we're not hammering the browser. 10 times a second should be plenty
     updateBox(event);    
-    collectSelectedLinks();        
+    var debouncedCollectSelectedLinks = debounce(collectSelectedLinks, 100, true);
+    debouncedCollectSelectedLinks();
+    // collectSelectedLinks();        
     _box.style.visibility = "visible";
     _icon.style.visibility = "visible";
 }
@@ -233,9 +238,9 @@ function boxIntersectsWith(linkElement) {
     var width = linkElement.offsetWidth;
     var height = linkElement.offsetHeight;
 
-    var linkX1 = pos.x + 7;
+    var linkX1 = pos.x;
     var linkX2 = linkX1 + width;
-    var linkY1 = pos.y + 7;
+    var linkY1 = pos.y;
     var linkY2 = linkY1 + height;
 
     if (!(linkX1 > _box.x2 || linkX2 < _box.x1 || linkY1 > _box.y2 || linkY2 < _box.y1)) {
@@ -316,22 +321,31 @@ function collectAllLinks() {
  * @param {*} event 
  */
 function updateBox(event) {
-    // TODO - this only works for dragging from left-to-right
-    // Need to draw a box which works in the reverse
 
-    var width = Math.max((_box.x - event.pageX), event.pageX - _box.x);
-    var height = Math.max((_box.y - event.pageY), event.pageY - _box.y);
+    var documentWidth = Math.max(document.documentElement["clientWidth"], document.body["scrollWidth"], document.documentElement["scrollWidth"], document.body["offsetWidth"], document.documentElement["offsetWidth"]);  // taken from jquery
+	var documentHeight = Math.max(document.documentElement["clientHeight"], document.body["scrollHeight"], document.documentElement["scrollHeight"], document.body["offsetHeight"], document.documentElement["offsetHeight"]);  // taken from jquery
 
-    _box.x1 = _box.x;
-    _box.x2 = event.pageX; // TODO: -7?
-    _box.y1 = _box.y;
-    _box.y2 = event.pageY; // TODO: -7?
+    _box.x1 = Math.min(_box.x, event.pageX);
+    _box.x2 = Math.max(_box.x, event.pageX);
+    _box.y1 = Math.min(_box.y, event.pageY);
+    _box.y2 = Math.max(_box.y, event.pageY);
 
-    _box.style.left = _box.x + "px";
-	_box.style.top = _box.y + "px";
+    // Take the minimum of:
+    // 1) The maximum width/height we could possibly fill, e.g. the width/height of the client, minus any left/top offset
+    // 2) The calculated width/height given the starting and ending coordinates
+    // This is to prevent dragging off the page
+    var width = Math.min((documentWidth-_box.x1), (_box.x2-_box.x1));
+    var height = Math.min((documentWidth-_box.y1), (_box.y2-_box.y1));
 
-    _box.style.width = width + "px";
-    _box.style.height = height + "px";
+    if (width === 0 || height === 0) {
+        return;
+    }
+
+    _box.style.left = _box.x1 + "px";
+	_box.style.top = _box.y1 + "px";
+
+    _box.style.width = width-3 + "px"; // -3 because the cursor was always slightly off target
+    _box.style.height = height-3 + "px"; // -3 because the cursor was always slightly off target
     
     _icon.style.left = _box.x - (_iconSize/2) + "px";
 	_icon.style.top = _box.y - (_iconSize/2) + "px";
