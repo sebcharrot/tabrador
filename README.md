@@ -6,6 +6,9 @@ A Web Extension written for Firefox (in theory should work on Chrome too) which 
 # Who wrote this?
 [Seb Charrot](https://www.sebcharrot.com)
 
+# Links
+[Firefox Extension](https://addons.mozilla.org/en-GB/firefox/addon/tabrador/)
+
 # Attributions
 
 Inspired by the marvellous [LinkClump](https://github.com/benblack86/linkclump).
